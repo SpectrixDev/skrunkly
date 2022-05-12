@@ -1,4 +1,6 @@
 import requests, json, random, sys
+import matplotlib.pyplot as plt
+import numpy as np
 
 # Read the json config
 with open('config.json') as h:
@@ -6,9 +8,9 @@ with open('config.json') as h:
 
 dc = config['discord'] # discord config
 
-def weather(key, city, days, aqi, alerts):
+def weather(key, city, days, alerts):
   # Get the weather data in json format
-  weatherUrl = f'http://api.weatherapi.com/v1/forecast.json?key={key}&q={city}&days={days}&aqi={aqi}&alerts={alerts}'
+  weatherUrl = f'http://api.weatherapi.com/v1/forecast.json?key={key}&q={city}&days={days}&aqi=no&alerts={alerts}'
   weather_response = requests.get(weatherUrl)
   weather = weather_response.json()
 
@@ -23,35 +25,58 @@ def weather(key, city, days, aqi, alerts):
   else:
     tomorrowRainChance = f"a {weather['forecast']['forecastday'][1]['day']['daily_chance_of_rain']}%"
 
+  # Plot the day's 24 hour weather data, in 1 hour intervals.
+  plt.figure(figsize=(12,8))
+  for i in range(23):
+    plt.plot([i, i+1], [weather['forecast']['forecastday'][0]['hour'][i]['temp_c'], weather['forecast']['forecastday'][0]['hour'][i+1]['temp_c']], '-', color='red')
+  plt.ylabel('Temperature (°C)')
+  plt.xlabel('Time (hours)')
+  plt.xticks(np.arange(0, 24, 1))
+  plt.title(f'{weather["location"]["name"]} weather for {weather["forecast"]["forecastday"][0]["date"]}')
+  plt.savefig('DailyWeatherGraph.png')
+
+  # Upload image to imgur
+  imgur_response = requests.post('https://api.imgur.com/3/image', headers={'Authorization': f'Client-ID {config["imgurClientID"]}'}, files={'image': open('DailyWeatherGraph.png', 'rb')})
+  imgur_json = imgur_response.json()
+  imgur_url = imgur_json['data']['link']
+  print(imgur_url)
 
   # Prepare the message
 
   weatherDescription = (f"ℹ **Conditions:** {weather['forecast']['forecastday'][0]['day']['condition']['text']}\n\n"+
                         f"🌞 **High:** {weather['forecast']['forecastday'][0]['day']['maxtemp_c']} °C\n\n"+
                         f"🌚 **Low:** {weather['forecast']['forecastday'][0]['day']['mintemp_c']} °C\n\n"+
-                        f"🍃 **Max Wind** {weather['forecast']['forecastday'][0]['day']['maxwind_kph']} km/h\n\n"+
-                        f"♨️ **Humidity** {weather['forecast']['forecastday'][0]['day']['avghumidity']}%\n\n"+
-                        f"☔ **Chance of rain** {rainChance}\n\n"+
-                        f"🌅 **Sunrise** {weather['forecast']['forecastday'][0]['astro']['sunrise']}\n\n"+
-                        f"🌇 **Sunset** {weather['forecast']['forecastday'][0]['astro']['sunset']}\n\n"+
-                        f"⛱ **UV index** {weather['forecast']['forecastday'][0]['day']['uv']}\n\n")
-                     
+                        f"🌡 **Current:** {weather['current']['temp_c']} °C\n\n"+
+                        f"🍃 **Max Wind:** {weather['forecast']['forecastday'][0]['day']['maxwind_kph']} km/h\n\n"+
+                        f"♨️ **Humidity:** {weather['forecast']['forecastday'][0]['day']['avghumidity']}%\n\n"+
+                        f"☔ **Chance of rain:** {rainChance}\n\n"+
+                        f"🌅 **Sunrise:** {weather['forecast']['forecastday'][0]['astro']['sunrise']}\n\n"+
+                        f"🌇 **Sunset:** {weather['forecast']['forecastday'][0]['astro']['sunset']}\n\n"+
+                        f"⛱ **UV index:** {weather['forecast']['forecastday'][0]['day']['uv']}\n\n")
+
+  # See if we need to include snow conditions              
   if weather['forecast']['forecastday'][0]['day']['daily_chance_of_snow'] > 0:
     weatherDescription+=f"• **❄ Chance of snow** {weather['forecast']['forecastday'][0]['day']['daily_chance_of_snow']}%\n"
+  # See if we need to include alerts
+  if weather['alerts']['alert']:
+    try:
+      weatherDescription+=f"• 🚨**Alerts:** {weather['alerts']['alert'][0]}\n"
+    except:
+      weatherDescription+=f"• 🚨**Alerts:** Apparently there's alerts in your area, check a weather app.\n"
 
   weatherDescription+=(f"\n📅 **Tomorrow**: {weather['forecast']['forecastday'][1]['day']['condition']['text']} " +
                         f"with a high of {weather['forecast']['forecastday'][1]['day']['maxtemp_c']} °C with {tomorrowRainChance} chance of rain\n\n")
 
   data={
     "username": "The Skrunkly",
-    "avatar_url": "https://i.imgur.com/4M34hi2.png",
+    "avatar_url": "https://cdn.discordapp.com/attachments/478201257417244675/974380313046286356/TheSkrunkly.png",
     "content": ("Good morning, <@"+dc["ownerID"]+">!"),
     "embeds": [
       {
         "author": {
           "name": "Daily Rundown",
-          "icon_url": "https://cdn.pixabay.com/photo/2019/01/01/14/55/calendar-3906791_640.jpg",
           "url": "https://calendar.google.com/calendar/u/0/r",
+          "icon_url": 'http://'+((weather["forecast"]["forecastday"][0]["day"]["condition"]["icon"])[2:])
         },
 
         "title": "Today's weather",
@@ -60,19 +85,20 @@ def weather(key, city, days, aqi, alerts):
 
         "color": ''.join(str(random.randint(0,9)) for i in range(7)),
         "thumbnail": {
-          "url": "http://"+((weather["forecast"]["forecastday"][0]["day"]["condition"]["icon"])[2:])
+          "url": imgur_url,
         }
       }
     ]
   }
 
   webhook = dc["webhookUrl"]
-  response = requests.post(webhook, json=data)
+  requests.post(webhook, json=data)
+
 
 if __name__ == "__main__":
   if len(sys.argv) > 1:
     if sys.argv[1] == "--weather":
-      weather(config['weather']['key'], config['weather']['city'], config['weather']['days'], config['weather']['aqi'], config['weather']['alerts'])
+      weather(config['weather']['key'], config['weather']['city'], config['weather']['days'], config['weather']['alerts'])
     elif sys.argv[1] == "--help":
       print("Usage: python main.py [--weather, --help]")
     else:
