@@ -1,0 +1,15 @@
+{
+    "discord":
+    {
+        "webhookUrl": "https://discord.com/api/webhooks/yourwebhook",
+        "ownerID": "276707898091110400"
+    },
+    
+    "weather": {
+        "key": "weatherapi.com API key here",
+        "city": "Your City",
+        "days": 2,
+        "aqi": "Air Quality Data, leave value as either 'yes' or 'no'",
+        "alerts": "Weather alerts in your area, leave value as either 'yes' or 'no'"
+    }
+}
