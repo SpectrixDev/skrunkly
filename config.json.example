@@ -12,5 +12,6 @@
         "alerts": "Weather alerts in your area, leave value as either 'yes' or 'no'"
     },
 
-    "imgurClientID": "example"
+    "imgurClientID": "example",
+    "coinMarketCapKey": "example"
 }

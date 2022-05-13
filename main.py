@@ -1,6 +1,7 @@
-import requests, json, random, sys
+import requests, json, random, sys, time
 import matplotlib.pyplot as plt
 import numpy as np
+from requests import Session
 
 # Read the json config
 with open('config.json') as h:
@@ -39,7 +40,6 @@ def weather(key, city, days, alerts):
   imgur_response = requests.post('https://api.imgur.com/3/image', headers={'Authorization': f'Client-ID {config["imgurClientID"]}'}, files={'image': open('DailyWeatherGraph.png', 'rb')})
   imgur_json = imgur_response.json()
   imgur_url = imgur_json['data']['link']
-  print(imgur_url)
 
   # Prepare the message
 
@@ -94,11 +94,74 @@ def weather(key, city, days, alerts):
   webhook = dc["webhookUrl"]
   requests.post(webhook, json=data)
 
+def CryptoPriceUpdate():
+  # Get the crypto prices for BTC, ETH and SOL in both dollar, pound and zar.
+  url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
+  currencies = ['USD', 'GBP', 'ZAR']
+  cryptocurrencies = ['BTC', 'ETH', 'SOL']
+  priceList = []
+  cryptoMessage = ''
+  # Get cryptocurrency prices for each of the currencies in the array above.
+  for currency in currencies:
+    cryptoMessage+=f"\n**{currency}:**\n"
+    for cryptocurrency in cryptocurrencies:
+      payload = {
+        'amount': 1,
+        'convert': currency,
+        'symbol': cryptocurrency
+      }
+      headers = {
+        'Accepts': 'application/json',  
+        'X-CMC_PRO_API_KEY': config["coinMarketCapKey"]
+      }
+      response = requests.get(url, params=payload, headers=headers)
+      data = response.json()
+      cryptoMessage+=f"{(data['data']['symbol'])}:  {str(round(float(data['data']['quote'][currency]['price']), 2))} {currency}\n"
+      priceList.append(float(data['data']['quote'][currency]['price']))
+  # Figure out the current exchange rate roughly using the crypto priecs for the lulz, cuz why not do funny math just cuz life is too short not to
+  # Mega spaghetti code, except it makes sense and I don't wanna make it more readable hahahaha
+  poundtozar = round((priceList[6]/priceList[0]+priceList[7]/priceList[1]+priceList[8]/priceList[2])/3, 2)
+  usdtozar = round((priceList[6]/priceList[3]+priceList[7]/priceList[4]+priceList[8]/priceList[5])/3, 2)
+
+  discordEmbed={
+    "username": "The Skrunkly",
+    "avatar_url": "https://cdn.discordapp.com/attachments/478201257417244675/974380313046286356/TheSkrunkly.png",
+    "embeds": [
+      {
+        "author": {
+          "name": "Daily Rundown",
+          "url": "https://calendar.google.com/calendar/u/0/r"
+        },
+
+        "title": "📊 Market Rundown",
+        "url": "https://coingecko.com",
+
+        "fields": [
+          {
+            "name": "💳 __**Live Crypto Prices:**__",
+            "value": cryptoMessage,
+            "inline": False
+          },
+          {
+            "name": "💵 __**Live Fiat Prices:**__",
+            "value": f"1 Dollar = {poundtozar} ZAR\n1 GBP = {usdtozar} ZAR",
+            "inline": False
+          }
+        ],
+
+        "color": ''.join(str(random.randint(0,9)) for i in range(7)),
+      }
+    ]
+  }
+  webhook = dc["webhookUrl"]
+  requests.post(webhook, json=discordEmbed)
 
 if __name__ == "__main__":
   if len(sys.argv) > 1:
     if sys.argv[1] == "--weather":
       weather(config['weather']['key'], config['weather']['city'], config['weather']['days'], config['weather']['alerts'])
+    elif sys.argv[1] == "--crypto":
+      CryptoPriceUpdate()
     elif sys.argv[1] == "--help":
       print("Usage: python main.py [--weather, --help]")
     else:
