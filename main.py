@@ -122,6 +122,7 @@ def CryptoPriceUpdate():
   # Mega spaghetti code, except it makes sense and I don't wanna make it more readable hahahaha
   poundtozar = round((priceList[6]/priceList[0]+priceList[7]/priceList[1]+priceList[8]/priceList[2])/3, 2)
   usdtozar = round((priceList[6]/priceList[3]+priceList[7]/priceList[4]+priceList[8]/priceList[5])/3, 2)
+  poundtousd = round((priceList[0]/priceList[3]+priceList[1]/priceList[4]+priceList[2]/priceList[5])/3, 2)
 
   discordEmbed={
     "username": "The Skrunkly",
@@ -130,7 +131,8 @@ def CryptoPriceUpdate():
       {
         "author": {
           "name": "Daily Rundown",
-          "url": "https://calendar.google.com/calendar/u/0/r"
+          "url": "https://calendar.google.com/calendar/u/0/r",
+          "icon_url": "https://is5-ssl.mzstatic.com/image/thumb/Purple115/v4/6f/c6/78/6fc67811-c13b-a812-048d-3b1155a58449/source/256x256bb.jpg"
         },
 
         "title": "📊 Market Rundown",
@@ -144,7 +146,7 @@ def CryptoPriceUpdate():
           },
           {
             "name": "💵 __**Live Fiat Prices:**__",
-            "value": f"1 Dollar = {poundtozar} ZAR\n1 GBP = {usdtozar} ZAR",
+            "value": f"£1 = R{usdtozar}\n£1 = ${poundtousd}\n$1 = R{poundtozar}\n",
             "inline": False
           }
         ],
