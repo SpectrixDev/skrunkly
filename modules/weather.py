@@ -2,18 +2,11 @@ import requests, random, json
 import matplotlib.pyplot as plt
 import numpy as np
 
-# Read the json config
-with open('config.json') as h:
-  config = json.load(h)
-
-dc = config['discord'] # discord config
-
-
 class Weather():
     def __init__(self):
         pass
 
-    def get_weather(self, key, city, days, alerts):
+    def get_weather(self, key, city, days, alerts, dc, imgur):
         # Get the weather data in json format
         weatherUrl = f'http://api.weatherapi.com/v1/forecast.json?key={key}&q={city}&days={days}&aqi=no&alerts={alerts}'
         weather_response = requests.get(weatherUrl)
@@ -42,7 +35,7 @@ class Weather():
 
         # Upload image to imgur
         try:
-            imgur_response = requests.post('https://api.imgur.com/3/image', headers={'Authorization': f'Client-ID {config["imgurClientID"]}'}, files={'image': open('DailyWeatherGraph.png', 'rb')})
+            imgur_response = requests.post('https://api.imgur.com/3/image', headers={'Authorization': f'Client-ID {imgur}'}, files={'image': open('DailyWeatherGraph.png', 'rb')})
             imgur_json = imgur_response.json()
             imgur_url = imgur_json['data']['link']
         except Exception as e:

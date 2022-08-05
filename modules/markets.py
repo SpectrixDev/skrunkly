@@ -1,17 +1,11 @@
 import requests, random, json
 from requests import Session
 
-# Read the json config
-with open('config.json') as h:
-  config = json.load(h)
-
-discord = config['discord'] # discord config
-
 class Markets:
     def __init__(self):
         pass
     
-    def get_market(self, key, currencies, cryptocurrencies):
+    def get_market(self, key, currencies, cryptocurrencies, dc):
         # Get the crypto prices for BTC, ETH and SOL in both dollar, pound and zar.
         url = 'https://pro-api.coinmarketcap.com/v1/tools/price-conversion'
         priceList = []
@@ -34,7 +28,7 @@ class Markets:
                 data = response.json()
                 cryptoMessage+=f"{(data['data']['symbol'])}:  {str(round(float(data['data']['quote'][currency]['price']), 2))} {currency}\n"
                 priceList.append(float(data['data']['quote'][currency]['price']))
-        # Figure out the current exchange rate roughly using the crypto priecs for the lulz, cuz why not do funny math just cuz life is too short not to
+        # Figure out the current exchange rate roughly using the crypto priecs cuz why not :)
         # Mega spaghetti code, except it makes sense and I don't wanna make it more readable hahahaha
         poundtozar = round((priceList[6]/priceList[0]+priceList[7]/priceList[1]+priceList[8]/priceList[2])/3, 2)
         usdtozar = round((priceList[6]/priceList[3]+priceList[7]/priceList[4]+priceList[8]/priceList[5])/3, 2)
@@ -71,5 +65,5 @@ class Markets:
             }
             ]
         }
-        webhook = discord["webhookUrl"]
+        webhook = dc["webhookUrl"]
         requests.post(webhook, json=discordEmbed)

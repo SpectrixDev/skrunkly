@@ -18,9 +18,9 @@ if __name__ == "__main__":
   matplotlib.use('Agg') # This is to make matplotlib work on a server, making it not load up GTK (for use with raspberry pi running ubuntu)
   if len(sys.argv) > 1:
     if sys.argv[1] == "--weather":
-      Weather().get_weather(weather['key'], weather['city'], weather['days'], weather['alerts'])
+      Weather().get_weather(weather['key'], weather['city'], weather['days'], weather['alerts'], discord, config["imgurClientID"])
     elif sys.argv[1] == "--markets":
-      Markets().get_market(markets['key'], markets['currencies'], markets['cryptocurrencies'])
+      Markets().get_market(markets['key'], markets['currencies'], markets['cryptocurrencies'], discord)
     elif sys.argv[1] == "--help":
       print("Usage: python main.py [--weather, --help]")
     else:
