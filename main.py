@@ -1,4 +1,4 @@
-import requests, json, random, sys, time
+import requests, json, random, sys, time, matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from requests import Session
@@ -15,7 +15,7 @@ weather = config['weather'] # weather config
 markets = config['markets'] # markets config, basically coinmarketcap
 
 if __name__ == "__main__":
-  plt.use('Agg') # This is to make matplotlib work on a server, making it not load up GTK
+  matplotlib.use('Agg') # This is to make matplotlib work on a server, making it not load up GTK (for use with raspberry pi running ubuntu)
   if len(sys.argv) > 1:
     if sys.argv[1] == "--weather":
       Weather().get_weather(weather['key'], weather['city'], weather['days'], weather['alerts'])

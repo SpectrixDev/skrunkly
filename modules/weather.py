@@ -76,7 +76,7 @@ class Weather():
         weatherDescription+=(f"\n📅 **Tomorrow**: {weather['forecast']['forecastday'][1]['day']['condition']['text']} " +
                             f"with a high of {weather['forecast']['forecastday'][1]['day']['maxtemp_c']} °C with {tomorrowRainChance} chance of rain\n\n")
         data={
-            "username": "The Skrunkly",
+            "username": dc['customUserName'],
             "avatar_url": "https://cdn.discordapp.com/attachments/478201257417244675/974380313046286356/TheSkrunkly.png",
             "content": ("Good morning, <@"+dc["ownerID"]+">!"),
             "embeds": [

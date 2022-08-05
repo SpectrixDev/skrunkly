@@ -1,6 +1,8 @@
 {
     "discord":
     {
+        "customUserName": "Skrunkly",
+        "customUserAvatar": "",
         "webhookUrl": "https://discord.com/api/webhooks/yourwebhook",
         "ownerID": "276707898091110400"
     },
