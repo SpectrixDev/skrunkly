@@ -1,4 +1,4 @@
-import requests, random, json
+import requests, random
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -16,12 +16,12 @@ class Weather():
         if weather['forecast']['forecastday'][0]['day']['daily_chance_of_rain'] == 0:
             rainChance = 'None predicted'
         else:
-            rainChance = f"{weather['forecast']['forecastday'][0]['day']['daily_chance_of_rain']}%"
+            rainChance = f"{float(weather['forecast']['forecastday'][0]['day']['daily_chance_of_rain'])}%"
 
         if weather['forecast']['forecastday'][1]['day']['daily_chance_of_rain'] == 0:
             tomorrowRainChance = 'no'
         else:
-            tomorrowRainChance = f"a {weather['forecast']['forecastday'][1]['day']['daily_chance_of_rain']}%"
+            tomorrowRainChance = f"a {float(weather['forecast']['forecastday'][1]['day']['daily_chance_of_rain'])}%"
 
         # Plot the day's 24 hour weather data, in 1 hour intervals.
         plt.figure(figsize=(12,8))
@@ -46,15 +46,15 @@ class Weather():
         # Prepare the message
 
         weatherDescription = (f"ℹ **Conditions:** {weather['forecast']['forecastday'][0]['day']['condition']['text']}\n\n"+
-                            f"🌞 **High:** {weather['forecast']['forecastday'][0]['day']['maxtemp_c']} °C\n\n"+
-                            f"🌚 **Low:** {weather['forecast']['forecastday'][0]['day']['mintemp_c']} °C\n\n"+
-                            f"🌡 **Current:** {weather['current']['temp_c']} °C\n\n"+
-                            f"🍃 **Max Wind:** {weather['forecast']['forecastday'][0]['day']['maxwind_kph']} km/h\n\n"+
-                            f"♨️ **Humidity:** {weather['forecast']['forecastday'][0]['day']['avghumidity']}%\n\n"+
+                            f"🌞 **High:** {format_number(str(weather['forecast']['forecastday'][0]['day']['maxtemp_c']))} °C\n\n"+
+                            f"🌚 **Low:** {format_number(str(weather['forecast']['forecastday'][0]['day']['mintemp_c']))} °C\n\n"+
+                            f"🌡 **Current:** {format_number(str(weather['current']['temp_c']))} °C\n\n"+
+                            f"🍃 **Max Wind:** {format_number(str(weather['forecast']['forecastday'][0]['day']['maxwind_kph']))} km/h\n\n"+
+                            f"♨️ **Humidity:** {format_number(str(weather['forecast']['forecastday'][0]['day']['avghumidity']))}%\n\n"+
                             f"☔ **Chance of rain:** {rainChance}\n\n"+
                             f"🌅 **Sunrise:** {weather['forecast']['forecastday'][0]['astro']['sunrise']}\n\n"+
                             f"🌇 **Sunset:** {weather['forecast']['forecastday'][0]['astro']['sunset']}\n\n"+
-                            f"⛱ **UV index:** {weather['forecast']['forecastday'][0]['day']['uv']}\n\n")
+                            f"⛱ **UV index:** {format_number(str(weather['forecast']['forecastday'][0]['day']['uv']))}\n\n")
 
         # See if we need to include snow conditions              
         if weather['forecast']['forecastday'][0]['day']['daily_chance_of_snow'] > 0:
@@ -95,3 +95,6 @@ class Weather():
         webhook = dc["webhookUrl"]
         requests.post(webhook, json=data)
 
+def format_number(number: str): # Required as a string for readability as API returns floats
+    # Check if there's a .0 at the end of the number, and if so, remove it.
+    return number[:-2] if number.endswith('.0') else number
